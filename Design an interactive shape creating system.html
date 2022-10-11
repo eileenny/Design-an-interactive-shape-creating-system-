@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HW1</title>
+    <style>
+        body {
+            margin: auto 0
+        }
+
+        #ui{
+            display:flex;
+           
+            justify-content:flex-start;
+            margin:20px;
+                      
+        }
+        button{
+            width: 90px;
+            height:90px;
+            display:flex;
+            margin:10px;
+        }
+        canvas {
+            border: solid rgb(75, 75, 78) 5px;
+            background-color: rgb(223, 250, 211);
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+   
+    <div class="container">
+        <canvas width="800" height="600" id="game"></canvas>
+        <div id="ui">
+            <button onClick="drawImage()">
+                <svg  viewBox="0 0 20 20">
+                    <path
+                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 
+                    3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                    <path d="M0 0h24v24H0z" fill="none" />
+                </svg>
+            </button>
+            <button  onClick="createRect()">
+                <svg viewBox="2 2 44 44">
+                    <rect x="5" y='5' width="40"  height="40" style="fill:rgb(70, 176, 247)"/>
+                </svg>
+            </button>
+            <button  onClick="createCircle()">
+                <svg  viewBox="9 9 50 50">
+                    <circle cx="35" cy="35" r='20' style="fill:rgb(31, 173, 154)"/>
+                </svg>
+            </button>
+            <button  onClick="createStar()">
+                <svg  viewBox="-30 -30 305 305">
+                    <path fill="blue"
+                    d="M 10,215 210,215 110, 42 z
+                    M 10,100 210,100 110,273 z"
+                    stroke="black" stroke-width="5"/>
+                </svg>  
+            </button>     
+        </div>
+    </div>
+</body>
+
+<script>
+    /** @type HTMLCanvasElement */
+    var canvas = document.querySelector('#game');
+    const ctx = canvas.getContext('2d')
+ //   canvas.height=innerHeight
+ //   canvas.width=innerWidth
+      
+    var shape=1;
+    drawing = false;
+    var mouse ={
+        x:0,
+        y:0
+    }
+
+    canvas.addEventListener('mouseup',(event)=>{drawing=false});
+
+    canvas.addEventListener('mousedown',(event)=>{
+        mouse.x = event.clientX - canvas.offsetLeft;
+        mouse.y = event.clientY - canvas.offsetTop;
+     
+        drawing = true;
+        switch(shape){
+          case 0:drawImage();
+                  break;
+          case 1:createRect();
+                  break;
+          case 2:createCircle();
+                  break;
+          case 3:createStar();
+                  break;
+        }
+           
+    })
+   
+    rot = 0
+    canvas.addEventListener('mousemove', (event)=>{
+        mouse.x = event.clientX - canvas.offsetLeft;
+        mouse.y = event.clientY - canvas.offsetTop;
+        if(drawing) {
+            switch(shape){
+                case 0:draw();
+                        break;
+                case 1:createRect();
+                        break;
+                case 2:createCircle();
+                        break;
+                case 3:createStar();
+                        break;       
+              }
+        }
+
+    })
+
+    // Set the fill style and draw a rectangle
+    function drawImage() {
+        shape = 0;
+        if(drawing) {
+            
+            var img = new Image();
+            img.onload = function(){
+              ctx.drawImage(img,mouse.x,mouse.y,80,80);
+              
+            };
+          // img.src = 'https://www.plus.ac.at/fachbereich-informatik.gif';
+          if(Math.random()>0.5)
+              img.src= `https://randomuser.me/api/portraits/men/${Math.floor(Math.random()*100)}.jpg`
+          else
+              img.src= `https://randomuser.me/api/portraits/women/${Math.floor(Math.random()*100)}.jpg`
+        }
+       
+     
+      }
+
+    var hue = 0;
+    function createRect(){
+   
+        shape = 1;
+       
+        if(drawing) {
+            hue = (hue+30) %360
+            ctx.fillStyle = `hsla(${hue},100%,50%,1)`;
+            ctx.save()
+            ctx.fillRect(mouse.x,mouse.y, 100, 100);
+            ctx.restore()
+        }
+        
+    }
+    function createCircle(){
+        shape = 2;
+       
+        if(drawing) {
+            hue = (hue+30) %360
+            ctx.save()
+            ctx.fillStyle = `hsla(${hue},100%,50%,1)`;
+            ctx.translate(mouse.x, mouse.y)
+            ctx.beginPath()
+            ctx.arc(0, 0,50,0,Math.PI*2,true);
+            ctx.closePath()
+            ctx.fill()
+            ctx.restore()
+        }
+       
+    }
+    var sharpRobot=0;
+    function createStar(){
+        shape = 3;
+        if(drawing) {
+            hue = (hue+30) % 360
+            ctx.fillStyle = `hsla(${hue},100%,50%,1)`;
+            ctx.save()
+              ctx.translate(mouse.x, mouse.y)
+              ctx.rotate(sharpRobot++)
+              drawStar(0, 0,5,30,15) 
+            ctx.restore()
+        }
+       
+    }
+
+    function drawStar(cx, cy, spikes, outerRadius, innerRadius) {
+        var rot = Math.PI / 2 * 3;
+        var x = cx;
+        var y = cy;
+        var step = Math.PI / spikes;
+    
+        ctx.strokeStyle = "#000";
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - outerRadius)
+        for (i = 0; i < spikes; i++) {
+            x = cx + Math.cos(rot) * outerRadius;
+            y = cy + Math.sin(rot) * outerRadius;
+            ctx.lineTo(x, y)
+            rot += step
+            x = cx + Math.cos(rot) * innerRadius;
+            y = cy + Math.sin(rot) * innerRadius;
+            ctx.lineTo(x, y)
+            rot += step
+ 
+        }
+        ctx.lineTo(cx, cy - outerRadius)
+        ctx.closePath();
+        ctx.lineWidth=5;
+        ctx.strokeStyle='red';
+        ctx.lineWidth=2;
+        ctx.shadowOffsetX=10;
+        ctx.shadowOffsetY=10;
+        ctx.shadowBlur=10
+        ctx.shadowColor='orange';
+        ctx.stroke();
+        ctx.fillStyle='skyblue';
+    //     ctx.fill();
+    
+    }
+   
+</script>
+
+</html>
